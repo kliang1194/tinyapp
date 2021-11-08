@@ -27,14 +27,15 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// Redirect after form submission
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
+// redirect short URLs to long URLs
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL);
   res.redirect(longURL);
 });
 
@@ -61,6 +62,7 @@ app.get("/fetch", (req, res) => {
 
 //Post Requests//
 
+// Add shortURL - longURL key-value pair to urlDatabase object
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
