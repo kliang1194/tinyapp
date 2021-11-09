@@ -6,8 +6,8 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" href="/urls" style="margin: 1em">My URLs</a>
+        <a class="nav-item nav-link" href="/urls/new" style="margin: 1em">Create New URL</a>
       </div>
     </div>
     <% if (user) { %>
@@ -19,10 +19,10 @@
       </form>
       <% } else { %>
     <form method="POST" action="/login" class="form-inline">
-      <div class="login" style="margin-left: 200px;">
-    <input id="username" type="text" name ="username" placeholder="Username" style="width: 250px; margin: 1em" class="form-control"/>
-    <button type="submit" style="background-color: white; border-color:blue; color:blue" class="btn btn-primary">Login</button>
-    </div>  
+      <div class="navbar-nav">
+        <a class="nav-item nav-link" href="/register" style="margin: 1em">Register</a>
+        <a class="nav-item nav-link" href="/login" style="margin: 1em">Login</a>
+      </div>
   </form>
     <% } %>
   </nav>
