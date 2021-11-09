@@ -10,8 +10,17 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//Generates random shortURL and User ID
 const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
+};
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  }
 };
 
 //Middleware//
@@ -116,6 +125,20 @@ app.post("/logout", (req, res) => {
   res.clearCookie("username", username);
   res.redirect('/urls');
 });
+
+app.post("/register", (req, res) => {
+  const userID = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  users[userID] = {
+    id: userID,
+    email: email,
+    password: password
+  };
+  res.cookie("user_id", users);
+  res.redirect('/urls');
+});
+
 //Listening to Port//
 
 
