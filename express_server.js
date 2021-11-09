@@ -15,6 +15,15 @@ const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
 };
 
+//Checks to see if the email submitted in registration already exists => error//
+const emailAlreadyExists = function(email) {
+  for (const user in users) {
+    if (users[user]["email"] === email) {
+      return true;
+    }
+  } return false; 
+};
+
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -34,7 +43,7 @@ app.use(cookieParser());
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]]
-  }
+  };
   res.render("urls_new", templateVars);
 });
 
@@ -121,20 +130,27 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  const userID = req.body.userID;
-  res.clearCookie("user_id", userID);
+  const username = req.body.username;
+  res.clearCookie("username", username);
   res.redirect('/urls');
 });
 
 app.post("/register", (req, res) => {
+
   const userID = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  users[userID] = {
+
+  if (!email || !password) {
+    res.status(400).send("Please include both a valid email and password!");
+  } else if (emailAlreadyExists(email)) {
+    res.status(400).send("An account already exists with this email address!");
+  } else {
+    users[userID] = {
     id: userID,
     email: email,
     password: password
-  };
+  }};
   res.cookie("user_id", userID);
   res.redirect('/urls');
 });
@@ -145,4 +161,3 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
