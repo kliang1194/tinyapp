@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require("cookie-parser");
-
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+app.set("view engine", "ejs");
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -14,14 +14,11 @@ const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
 };
 
-app.set("view engine", "ejs");
-
 //Middleware//
 
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(cookieParser());
-
 
 //Get Requests//
 
@@ -86,7 +83,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // POST route to update a URL resource 
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = req.body.newURL;
   res.redirect('/urls');
 });
 
@@ -96,6 +93,9 @@ app.post("/login", (req, res) => {
   res.cookie("username", username);
   res.redirect('/urls');
 });
+
+//Listening to Port//
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
