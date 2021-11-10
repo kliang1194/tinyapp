@@ -71,8 +71,16 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // redirect short URLs to long URLs
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  if (urlDatabase[req.params.shortURL]) {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    if (longURL === undefined) {
+      res.status(404).send("Error 404: This long URL cannot be found at this time!");
+    } else {
+      res.redirect(longURL);
+    }
+  } else {
+    res.status(404).send("Error 404: This short URL does not currently correspond with a long URL!");
+  }
 });
 
 app.get("/register", (req, res) => {
