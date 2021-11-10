@@ -6,8 +6,8 @@ const cookieParser = require("cookie-parser");
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "userID"},
+  "9sm5xK": {longURL: "http://www.google.com", userID: "userID"}
 };
 
 //Generates random shortURL and User ID
@@ -63,7 +63,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
@@ -71,7 +71,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // redirect short URLs to long URLs
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -118,7 +118,10 @@ app.post("/urls", (req, res) => {
     res.status(401).send("Error 401: You must be logged in to create a new URL");
   } else {
     const shortURL = generateRandomString();
-    urlDatabase[shortURL] = req.body.longURL;
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      user: req.cookies["userID"]
+    };
     res.redirect(`/urls/${shortURL}`);
   }
 });
@@ -133,16 +136,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // POST route to update a URL resource
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  urlDatabase[shortURL] = req.body.newURL;
+  urlDatabase[shortURL].longURL = req.body.newURL;
   res.redirect('/urls');
 });
-
-// // POST route to login with username
-// app.post("/login", (req, res) => {
-//   const username = req.body.username;
-//   res.cookie("username", username);
-//   res.redirect('/urls');
-// });
 
 //POST route to logout and delete userID cookies
 app.post("/logout", (req, res) => {
