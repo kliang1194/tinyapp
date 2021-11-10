@@ -19,15 +19,15 @@ const generateRandomString = () => {
 const emailAlreadyExists = function(email) {
   for (const user in users) {
     if (users[user]["email"] === email) {
-      return true;
+      return users[user].id;
     }
-  } return false; 
+  } return false;
 };
 
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   }
 };
@@ -58,7 +58,7 @@ app.get("/urls", (req, res) => {
 // Redirect after form submission
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
-    shortURL: req.params.shortURL, 
+    shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
     user: users[req.cookies["user_id"]]
   };
@@ -122,23 +122,24 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
-// POST route to update a URL resource 
+// POST route to update a URL resource
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   urlDatabase[shortURL] = req.body.newURL;
   res.redirect('/urls');
 });
 
-// POST route to login with username
-app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username);
-  res.redirect('/urls');
-});
+// // POST route to login with username
+// app.post("/login", (req, res) => {
+//   const username = req.body.username;
+//   res.cookie("username", username);
+//   res.redirect('/urls');
+// });
 
+//POST route to logout and delete userID cookies
 app.post("/logout", (req, res) => {
-  const username = req.body.username;
-  res.clearCookie("username", username);
+  const userID = req.body.userID;
+  res.clearCookie("user_id", userID);
   res.redirect('/urls');
 });
 
@@ -149,18 +150,37 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   if (!email || !password) {
-    res.status(400).send("Please include both a valid email and password!");
+    res.status(400).send("Error 400: Please include both a valid email and password!");
   } else if (emailAlreadyExists(email)) {
-    res.status(400).send("An account already exists with this email address!");
+    res.status(400).send("Error 400: An account already exists with this email address!");
   } else {
     users[userID] = {
-    id: userID,
-    email: email,
-    password: password
-  }};
+      id: userID,
+      email: email,
+      password: password
+    };
+  }
   res.cookie("user_id", userID);
   res.redirect('/urls');
 });
+
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!emailAlreadyExists(email)) {
+    res.status(403).send("Error 403: There is no user account associated with this email address!");
+  } else {
+    const userID = emailAlreadyExists(email);
+    if (users[userID].password !== password) {
+      res.status(403).send("Error 403: The password entered does not match our records for this email address!");
+    } else {
+      res.cookie('user_id', userID);
+      res.redirect("/urls");
+    }
+  }
+});
+
 
 //Listening to Port//
 
