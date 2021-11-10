@@ -10,6 +10,16 @@ const urlDatabase = {
   "9sm5xK": {longURL: "http://www.google.com", userID: "userID"}
 };
 
+const urlsForUser = function(id) {
+  const userUrls = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userUrls[shortURL] = urlDatabase[shortURL];
+    }
+  } 
+  return userUrls;
+};
+
 //Generates random shortURL and User ID
 const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
@@ -53,7 +63,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies["user_id"]),
     user: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
@@ -64,7 +74,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies["user_id"]]
+    user: users[req.cookies["user_id"]],
+    urlUserID: urlDatabase[req.params.shortURL].userID,
   };
   res.render("urls_show", templateVars);
 });
@@ -128,7 +139,7 @@ app.post("/urls", (req, res) => {
     const shortURL = generateRandomString();
     urlDatabase[shortURL] = {
       longURL: req.body.longURL,
-      user: req.cookies["userID"]
+      userID: req.cookies["user_id"]
     };
     res.redirect(`/urls/${shortURL}`);
   }
