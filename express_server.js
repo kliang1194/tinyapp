@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const morgan = require("morgan");
+const {urlsForUser, generateRandomString, getUserByEmail} = require("./helpers")
 
 app.set("view engine", "ejs");
 
@@ -23,33 +24,6 @@ const users = {
   }
 };
 
-//Helper Functions//
-
-//Returns the URLs where the userID is equal to the ID of the currently logged-in user.
-const urlsForUser = function(id) {
-  const userUrls = {};
-  for (let shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === id) {
-      userUrls[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return userUrls;
-};
-
-//Generates random shortURLs and UserIDs
-const generateRandomString = () => {
-  return Math.random().toString(36).substr(2, 6);
-};
-
-//Checks to see if the email submitted in registration already exists//
-const emailAlreadyExists = function(email) {
-  for (const user in users) {
-    if (users[user]["email"] === email) {
-      return users[user].id;
-    }
-  } return false;
-};
-
 //Middleware//
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -59,7 +33,7 @@ app.use(cookieSession({
   keys: ['KYLE'],
   maxAge: 24 * 60 * 60 * 1000,
 }));
-
+  
 app.use(morgan('dev'));
 
 //Get Requests//
@@ -78,6 +52,7 @@ app.get("/urls/new", (req, res) => {
 
 //Redirect after creating a new URL pairing. 
 app.get("/urls/:shortURL", (req, res) => {
+  if(urlDatabase[req.params.shortURL]) {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -85,12 +60,15 @@ app.get("/urls/:shortURL", (req, res) => {
     urlUserID: urlDatabase[req.params.shortURL].userID,
   };
   res.render("urls_show", templateVars);
+  } else {
+    res.status(404).send("Error 404: This short URL does not currently correspond with a long URL!");
+  }
 });
 
 //Reads the main page 
 app.get("/urls", (req, res) => {
   const templateVars = {
-    urls: urlsForUser(req.session.user_id),
+    urls: urlsForUser(req.session.user_id, urlDatabase),
     user: users[req.session.user_id]
   };
   res.render("urls_index", templateVars);
@@ -168,7 +146,7 @@ app.post("/urls", (req, res) => {
 // Deletes a shortURL - longURL key-value pair from urlDatabase and redirects to "/urls" page
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
-  const userURLs = urlsForUser(userID);
+  const userURLs = urlsForUser(userID, urlDatabase);
   if (Object.keys(userURLs).includes(req.params.shortURL)) {
     const shortURL = req.params.shortURL;
     delete urlDatabase[shortURL];
@@ -181,13 +159,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // Edits a shortURL - longURL key-value pair
 app.post("/urls/:id", (req, res) => {
   const userID = req.session.user_id;
-  const userUrls = urlsForUser(userID);
+  const userUrls = urlsForUser(userID, urlDatabase);
   if (Object.keys(userUrls).includes(req.params.id)) {
     const shortURL = req.params.id;
     urlDatabase[shortURL].longURL = req.body.newURL;
     res.redirect('/urls');
   } else {
-    res.send(401).send("Error 401: This short URL does not belong to you. Therefore, you cannot edit this short URL!");
+    res.status(401).send("Error 401: This short URL does not belong to you. Therefore, you cannot edit this short URL!");
   }
 });
 
@@ -207,7 +185,7 @@ app.post("/register", (req, res) => {
 
   if (!email || !password) {
     res.status(400).send("Error 400: Please include both a valid email and password!");
-  } else if (emailAlreadyExists(email)) {
+  } else if (getUserByEmail(email, users)) {
     res.status(400).send("Error 400: An account already exists with this email address!");
   } else {
     users[userID] = {
@@ -224,9 +202,9 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const userID = emailAlreadyExists(email);
+  const userID = getUserByEmail(email, users);
 
-  if (!emailAlreadyExists(email)) {
+  if (!getUserByEmail(email, users)) {
     res.status(403).send("Error 403: There is no user account associated with this email address!");
   } else {
     if (!bcrypt.compareSync(password, users[userID].password)) {
