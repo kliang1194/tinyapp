@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const morgan = require("morgan");
 
 app.set("view engine", "ejs");
 
@@ -58,6 +59,8 @@ app.use(cookieSession({
   keys: ['KYLE'],
   maxAge: 24 * 60 * 60 * 1000,
 }));
+
+app.use(morgan('dev'));
 
 //Get Requests//
 
