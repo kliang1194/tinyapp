@@ -3,6 +3,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
+
 app.set("view engine", "ejs");
 
 //Objects//
@@ -204,7 +206,7 @@ app.post("/register", (req, res) => {
     users[userID] = {
       id: userID,
       email: email,
-      password: password
+      password: bcrypt.hashSync(password, 10),
     };
   }
   res.cookie("user_id", userID);
@@ -215,12 +217,12 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const userID = emailAlreadyExists(email);
 
   if (!emailAlreadyExists(email)) {
     res.status(403).send("Error 403: There is no user account associated with this email address!");
   } else {
-    const userID = emailAlreadyExists(email);
-    if (users[userID].password !== password) {
+    if (!bcrypt.compareSync(password, users[userID].password)) {
       res.status(403).send("Error 403: The password entered does not match our records for this email address!");
     } else {
       res.cookie('user_id', userID);
