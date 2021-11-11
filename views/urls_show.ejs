@@ -15,11 +15,11 @@
       <div class="card-header"></div>
       <div class="card-body">
         <% if (!user) { %>
-          <div>
+          <div class="alert alert-warning" role="alert">
               Please <a href="/login" class="alert-link">login</a> or <a href="/register" class="alert-link">register</a> to view your personal database of short URLs.
           </div>
         <% } else if (user.id !== urlUserID) { %>
-          <div>
+          <div class="alert alert-warning" role="alert">
               This link is not in your personal database.
           </div>
         <% } else { %>
