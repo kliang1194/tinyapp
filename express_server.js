@@ -90,42 +90,34 @@ app.get("/u/:shortURL", (req, res) => {
 
 //Reads registration page
 app.get("/register", (req, res) => {
+  if(req.session.user_id) {
+    res.redirect("/urls");
+  } else {
   const templateVars = {
     user: users[req.session.user_id]
   };
   res.render("urls_registration", templateVars);
+  };
 });
 
 //Reads login page
 app.get("/login", (req, res) => {
+  if(req.session.user_id) {
+    res.redirect("/urls");
+  } else {
   const templateVars = {
     user: users[req.session.user_id]
   };
   res.render("urls_login", templateVars);
+  };
 });
 
 app.get("/", (req, res) => {
+  if (!req.session.user_id) {
+    res.redirect("/login");
+  }
   res.redirect("/urls");
 });
-
-//Removed practice code//
-
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World<b/></body></html>\n");
-// });
-
-// app.get("/set", (req, res) => {
-//   const a = 1;
-//   res.send(`a = ${a}`);
-// });
- 
-// app.get("/fetch", (req, res) => {
-//   res.send(`a = ${a}`);
-// });
 
 //Post Requests//
 
