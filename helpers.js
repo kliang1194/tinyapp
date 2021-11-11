@@ -22,7 +22,7 @@ const getUserByEmail = function(email, userDatabase) {
     if (userDatabase[user]["email"] === email) {
       return user;
     }
-  } return false;
+  } return undefined;
 };
 
 
